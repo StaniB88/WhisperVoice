@@ -77,9 +77,40 @@ function getIconPath() {
 }
 
 // Download URLs
-const PYTHON_URL = 'https://www.python.org/ftp/python/3.12.0/python-3.12.0-embed-amd64.zip';
 const FFMPEG_URL = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip';
 const GET_PIP_URL = 'https://bootstrap.pypa.io/get-pip.py';
+
+// Python versions to try (newest first) - compatible with Whisper/PyTorch
+const PYTHON_VERSIONS = ['3.13.1', '3.13.0', '3.12.8', '3.12.7', '3.12.0', '3.11.9', '3.11.0', '3.10.11'];
+
+// Check if a Python download URL exists
+function checkPythonUrlExists(version) {
+  return new Promise((resolve) => {
+    const url = `https://www.python.org/ftp/python/${version}/python-${version}-embed-amd64.zip`;
+    https.get(url, { method: 'HEAD', timeout: 5000 }, (res) => {
+      resolve(res.statusCode === 200 || res.statusCode === 302);
+    }).on('error', () => resolve(false)).on('timeout', () => resolve(false));
+  });
+}
+
+// Get best available Python embeddable URL
+async function getPythonDownloadUrl() {
+  for (const version of PYTHON_VERSIONS) {
+    const exists = await checkPythonUrlExists(version);
+    if (exists) {
+      console.log(`Found available Python version: ${version}`);
+      return {
+        url: `https://www.python.org/ftp/python/${version}/python-${version}-embed-amd64.zip`,
+        version
+      };
+    }
+  }
+  // Fallback to a known stable version
+  return {
+    url: 'https://www.python.org/ftp/python/3.12.0/python-3.12.0-embed-amd64.zip',
+    version: '3.12.0'
+  };
+}
 
 // Standard-Konfiguration
 const DEFAULT_CONFIG = {
@@ -407,11 +438,15 @@ async function installPython() {
   };
 
   try {
-    sendProgress(0, 'Downloading Python...', 'Starting Python download...');
+    sendProgress(0, 'Finding Python...', 'Checking for latest Python version...');
+
+    // Get best available Python version dynamically
+    const pythonInfo = await getPythonDownloadUrl();
+    sendProgress(5, 'Downloading Python...', `Found Python ${pythonInfo.version}, starting download...`);
 
     // Python herunterladen
-    await downloadFile(PYTHON_URL, zipPath, (percent) => {
-      sendProgress(percent * 0.5, `Downloading... ${percent}%`);
+    await downloadFile(pythonInfo.url, zipPath, (percent) => {
+      sendProgress(5 + percent * 0.45, `Downloading Python ${pythonInfo.version}... ${percent}%`);
     });
 
     sendProgress(50, 'Extracting...', 'Download complete. Extracting...', 'success');
@@ -1346,6 +1381,7 @@ function transcribeViaServer(audioPath) {
 
 // IPC Handlers
 ipcMain.handle('get-config', () => CONFIG);
+ipcMain.handle('get-app-version', () => app.getVersion());
 
 ipcMain.handle('transcribe', async (event, audioPath, options = {}) => {
   try {
