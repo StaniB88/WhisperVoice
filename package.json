@@ -1,6 +1,6 @@
 {
   "name": "whisper-voice",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Local voice-to-text with OpenAI Whisper",
   "main": "src/main.js",
   "scripts": {
