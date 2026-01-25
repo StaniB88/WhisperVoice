@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Whisper Voice</title>
+  <script src="./tailwind.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'app-bg': '#1a1a2e',
+            'app-dark': '#0d0d14',
+            'app-card': '#16213e',
+            'app-accent': '#4a9eff',
+            'app-success': '#4ade80',
+            'app-error': '#f87171',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow: hidden;
+      background: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      -webkit-app-region: drag;
+    }
+
+    .floating-bar {
+      background: rgba(20, 20, 25, 0.95);
+      border-radius: 20px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-app-region: drag;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00d4ff;
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.recording {
+      background: #ff4444;
+      animation: pulse 1s infinite;
+    }
+
+    .status-dot.processing {
+      background: #ffaa00;
+      animation: pulse 0.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    .status-text {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+      min-width: 140px;
+    }
+
+    .hotkey {
+      background: rgba(255, 255, 255, 0.15);
+      color: #aaa;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      -webkit-app-region: no-drag;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .floating-bar:hover .hotkey {
+      opacity: 1;
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 16px;
+    }
+
+    .waveform .bar {
+      width: 2px;
+      background: #00d4ff;
+      border-radius: 1px;
+      animation: wave 0.5s ease-in-out infinite;
+    }
+
+    .waveform .bar:nth-child(1) { animation-delay: 0s; height: 6px; }
+    .waveform .bar:nth-child(2) { animation-delay: 0.1s; height: 10px; }
+    .waveform .bar:nth-child(3) { animation-delay: 0.2s; height: 8px; }
+    .waveform .bar:nth-child(4) { animation-delay: 0.3s; height: 12px; }
+    .waveform .bar:nth-child(5) { animation-delay: 0.4s; height: 9px; }
+
+    .waveform.recording .bar {
+      background: #ff4444;
+    }
+
+    .waveform.hidden {
+      display: none;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(1.5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <div class="waveform hidden" id="waveform">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <span class="status-text" id="statusText">Bereit</span>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const waveform = document.getElementById('waveform');
+
+    // Übersetzungen für Floating Bar
+    const floatingTranslations = {
+      de: {
+        ready: 'Bereit',
+        recording: 'Aufnahme...',
+        processing: 'Verarbeite...',
+        done: 'Fertig!',
+        toDictate: '{hotkey} zum Diktieren'
+      },
+      en: {
+        ready: 'Ready',
+        recording: 'Recording...',
+        processing: 'Processing...',
+        done: 'Done!',
+        toDictate: '{hotkey} to dictate'
+      }
+    };
+
+    let currentLang = 'de';
+    let currentHotkey = 'Win+D';
+
+    function ft(key, replacements = {}) {
+      let text = floatingTranslations[currentLang][key] || floatingTranslations['de'][key] || key;
+      for (const [k, v] of Object.entries(replacements)) {
+        text = text.replace(`{${k}}`, v);
+      }
+      return text;
+    }
+
+    // Sprache ändern
+    ipcRenderer.on('language-changed', (event, lang) => {
+      currentLang = lang;
+      statusText.textContent = ft('toDictate', { hotkey: currentHotkey });
+    });
+
+    // Status Updates
+    ipcRenderer.on('status-update', (event, data) => {
+      const cleanText = data.text.replace(' (halten)', '').replace(' (tippen)', '');
+
+      statusDot.className = 'status-dot';
+      waveform.className = 'waveform hidden';
+
+      if (data.status === 'recording') {
+        statusDot.classList.add('recording');
+        waveform.classList.remove('hidden');
+        waveform.classList.add('recording');
+        statusText.textContent = ft('recording');
+      } else if (data.status === 'processing') {
+        statusDot.classList.add('processing');
+        statusText.textContent = ft('processing');
+      } else if (data.status === 'done') {
+        statusText.textContent = ft('done');
+      } else {
+        statusText.textContent = ft('toDictate', { hotkey: currentHotkey });
+      }
+    });
+
+    ipcRenderer.on('set-hotkey', (event, key) => {
+      currentHotkey = key.replace(' (halten)', '').replace(' (tippen)', '');
+      statusText.textContent = ft('toDictate', { hotkey: currentHotkey });
+    });
+
+    // Rechtsklick-Menü
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      ipcRenderer.send('show-floating-menu');
+    });
+  </script>
+</body>
+</html>
