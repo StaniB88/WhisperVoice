@@ -141,15 +141,45 @@ function getPythonPath() {
 // Find all system Python installations
 function findSystemPythonPaths() {
   const possiblePaths = [
+    // User install locations (most common)
     path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python313', 'python.exe'),
     path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python312', 'python.exe'),
     path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python311', 'python.exe'),
     path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python310', 'python.exe'),
+    // System-wide install locations (Program Files)
+    'C:\\Program Files\\Python313\\python.exe',
+    'C:\\Program Files\\Python312\\python.exe',
+    'C:\\Program Files\\Python311\\python.exe',
+    'C:\\Program Files\\Python310\\python.exe',
+    'C:\\Program Files (x86)\\Python313\\python.exe',
+    'C:\\Program Files (x86)\\Python312\\python.exe',
+    'C:\\Program Files (x86)\\Python311\\python.exe',
+    'C:\\Program Files (x86)\\Python310\\python.exe',
+    // Legacy root install locations
+    'C:\\Python313\\python.exe',
     'C:\\Python312\\python.exe',
     'C:\\Python311\\python.exe',
     'C:\\Python310\\python.exe',
   ];
-  return possiblePaths.filter(p => fs.existsSync(p));
+  const found = possiblePaths.filter(p => fs.existsSync(p));
+
+  // Also try to find Python via PATH using 'where' command
+  if (found.length === 0) {
+    try {
+      const { execSync } = require('child_process');
+      const whereResult = execSync('where python', { encoding: 'utf8', timeout: 5000 });
+      const pathsFromWhere = whereResult.trim().split('\n')
+        .map(p => p.trim())
+        .filter(p => p.endsWith('python.exe') && fs.existsSync(p))
+        // Exclude WindowsApps stub (it's not a real Python)
+        .filter(p => !p.includes('WindowsApps'));
+      return pathsFromWhere;
+    } catch (e) {
+      // 'where' command failed, no Python in PATH
+    }
+  }
+
+  return found;
 }
 
 // Check if a Python installation has working PyTorch and Whisper
