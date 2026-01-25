@@ -138,32 +138,46 @@ function getPythonPath() {
   return null;
 }
 
-// Find all system Python installations
+// Find all system Python installations (dynamic - supports any Python 3.x version)
 function findSystemPythonPaths() {
-  const possiblePaths = [
-    // User install locations (most common)
-    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python313', 'python.exe'),
-    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python312', 'python.exe'),
-    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python311', 'python.exe'),
-    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python310', 'python.exe'),
-    // System-wide install locations (Program Files)
-    'C:\\Program Files\\Python313\\python.exe',
-    'C:\\Program Files\\Python312\\python.exe',
-    'C:\\Program Files\\Python311\\python.exe',
-    'C:\\Program Files\\Python310\\python.exe',
-    'C:\\Program Files (x86)\\Python313\\python.exe',
-    'C:\\Program Files (x86)\\Python312\\python.exe',
-    'C:\\Program Files (x86)\\Python311\\python.exe',
-    'C:\\Program Files (x86)\\Python310\\python.exe',
-    // Legacy root install locations
-    'C:\\Python313\\python.exe',
-    'C:\\Python312\\python.exe',
-    'C:\\Python311\\python.exe',
-    'C:\\Python310\\python.exe',
-  ];
-  const found = possiblePaths.filter(p => fs.existsSync(p));
+  const found = [];
 
-  // Also try to find Python via PATH using 'where' command
+  // Directories to scan for Python installations
+  const searchDirs = [
+    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python'),  // User install
+    'C:\\Program Files',      // System-wide 64-bit
+    'C:\\Program Files (x86)', // System-wide 32-bit
+    'C:\\',                    // Legacy root install
+  ];
+
+  // Scan each directory for Python3XX folders
+  for (const dir of searchDirs) {
+    try {
+      if (!fs.existsSync(dir)) continue;
+
+      const entries = fs.readdirSync(dir);
+      for (const entry of entries) {
+        // Match Python3XX pattern (e.g., Python310, Python311, Python312, Python313, Python314...)
+        if (/^Python3\d+$/i.test(entry)) {
+          const pythonExe = path.join(dir, entry, 'python.exe');
+          if (fs.existsSync(pythonExe)) {
+            found.push(pythonExe);
+          }
+        }
+      }
+    } catch (e) {
+      // Directory not accessible, skip
+    }
+  }
+
+  // Sort by version descending (newest first) - Python314 before Python310
+  found.sort((a, b) => {
+    const versionA = parseInt(a.match(/Python3(\d+)/i)?.[1] || '0');
+    const versionB = parseInt(b.match(/Python3(\d+)/i)?.[1] || '0');
+    return versionB - versionA;
+  });
+
+  // Fallback: try to find Python via PATH using 'where' command
   if (found.length === 0) {
     try {
       const { execSync } = require('child_process');
@@ -325,13 +339,19 @@ function createSetupWindow() {
 // Download-Funktion mit Fortschrittsanzeige
 function downloadFile(url, destPath, onProgress) {
   return new Promise((resolve, reject) => {
+    // Ensure parent directory exists
+    const parentDir = path.dirname(destPath);
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+
     const file = fs.createWriteStream(destPath);
 
     const request = (url.startsWith('https') ? https : http).get(url, (response) => {
       // Handle redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
         file.close();
-        fs.unlinkSync(destPath);
+        if (fs.existsSync(destPath)) fs.unlinkSync(destPath);
         return downloadFile(response.headers.location, destPath, onProgress)
           .then(resolve)
           .catch(reject);
@@ -433,8 +453,8 @@ async function installPython() {
     sendProgress(100, 'Complete!', 'Python installed successfully!', 'success');
 
     // Aufräumen
-    fs.unlinkSync(zipPath);
-    fs.unlinkSync(getPipPath);
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    if (fs.existsSync(getPipPath)) fs.unlinkSync(getPipPath);
 
     // Config aktualisieren
     CONFIG.pythonPath = pythonExe;
@@ -511,7 +531,7 @@ async function installFFmpeg() {
     sendProgress(100, 'Complete!', `FFmpeg installed at: ${ffmpegBin}`, 'success');
 
     // Aufräumen
-    fs.unlinkSync(zipPath);
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
     // Config aktualisieren
     CONFIG.ffmpegPath = ffmpegBin;
