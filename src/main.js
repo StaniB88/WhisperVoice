@@ -711,9 +711,6 @@ async function installWhisper(useCuda = false) {
   };
 
   try {
-    const pythonDir = path.dirname(pythonPath);
-    const pipPath = path.join(pythonDir, 'Scripts', 'pip.exe');
-
     sendProgress(5, 'Installing dependencies...', 'Installing OpenAI Whisper...', 'info');
 
     // PyTorch installieren (CPU oder CUDA)
@@ -730,16 +727,16 @@ async function installWhisper(useCuda = false) {
       sendProgress(10, `Installing PyTorch (${cudaLabel})...`, `Using PyTorch ${cudaLabel} build...`, 'info');
 
       if (indexUrl) {
-        await runPip(pipPath, ['install', 'torch', 'torchvision', 'torchaudio', '--index-url', indexUrl], sendProgress);
+        await runPip(pythonPath, ['install', 'torch', 'torchvision', 'torchaudio', '--index-url', indexUrl], sendProgress);
       } else {
         // Fallback to CPU if no CUDA detected
-        await runPip(pipPath, ['install', 'torch', 'torchvision', 'torchaudio'], sendProgress);
+        await runPip(pythonPath, ['install', 'torch', 'torchvision', 'torchaudio'], sendProgress);
       }
     }
 
     // Whisper installieren
     sendProgress(50, 'Installing Whisper...', 'Installing openai-whisper...', 'info');
-    await runPip(pipPath, ['install', 'openai-whisper'], sendProgress);
+    await runPip(pythonPath, ['install', 'openai-whisper'], sendProgress);
 
     sendProgress(100, 'Complete!', 'Whisper installed successfully!', 'success');
 
@@ -757,9 +754,11 @@ async function installWhisper(useCuda = false) {
 }
 
 // pip Befehl ausführen
-function runPip(pipPath, args, sendProgress) {
+// Run pip using python -m pip (works universally with any Python installation)
+function runPip(pythonPath, args, sendProgress) {
   return new Promise((resolve, reject) => {
-    const pip = spawn(pipPath, args, {
+    // Use python -m pip instead of pip.exe directly - works with any Python install
+    const pip = spawn(pythonPath, ['-m', 'pip', ...args], {
       env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
 
@@ -1637,8 +1636,6 @@ ipcMain.handle('update-pytorch', async (event, options = {}) => {
     return { success: false, message: 'Python nicht gefunden' };
   }
 
-  const pipPath = path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe');
-
   // Auto-detect CUDA if no indexUrl specified
   let indexUrl = options.indexUrl;
   if (indexUrl === undefined || indexUrl === '') {
@@ -1650,11 +1647,11 @@ ipcMain.handle('update-pytorch', async (event, options = {}) => {
   return new Promise((resolve) => {
     // First uninstall old version
     console.log('Uninstalling old PyTorch...');
-    const uninstall = spawn(pipPath, ['uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 60000 });
+    const uninstall = spawn(pythonPath, ['-m', 'pip', 'uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 60000 });
 
     uninstall.on('close', () => {
       // Build install arguments based on selected index URL
-      let args = ['install'];
+      let args = ['-m', 'pip', 'install'];
 
       // Add --pre flag for nightly builds
       if (indexUrl && indexUrl.includes('nightly')) {
@@ -1669,7 +1666,7 @@ ipcMain.handle('update-pytorch', async (event, options = {}) => {
       }
 
       console.log('Installing PyTorch with args:', args.join(' '));
-      const pip = spawn(pipPath, args, { timeout: 600000 });
+      const pip = spawn(pythonPath, args, { timeout: 600000 });
       let output = '';
 
       pip.stdout.on('data', (data) => { output += data.toString(); });
@@ -1703,10 +1700,8 @@ ipcMain.handle('update-whisper', async () => {
     return { success: false, message: 'Python nicht gefunden' };
   }
 
-  const pipPath = path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe');
-
   return new Promise((resolve) => {
-    const pip = spawn(pipPath, ['install', '--upgrade', 'openai-whisper'], { timeout: 300000 });
+    const pip = spawn(pythonPath, ['-m', 'pip', 'install', '--upgrade', 'openai-whisper'], { timeout: 300000 });
     let output = '';
 
     pip.stdout.on('data', (data) => { output += data.toString(); });
@@ -1733,12 +1728,10 @@ ipcMain.handle('check-package-updates', async () => {
     return { error: 'Python nicht gefunden' };
   }
 
-  const pipPath = path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe');
-
   // Helper function to get installed version
   const getInstalledVersion = (packageName) => {
     return new Promise((resolve) => {
-      const pip = spawn(pipPath, ['show', packageName], { timeout: 30000 });
+      const pip = spawn(pythonPath, ['-m', 'pip', 'show', packageName], { timeout: 30000 });
       let output = '';
       pip.stdout.on('data', (data) => { output += data.toString(); });
       pip.on('close', () => {
@@ -1752,7 +1745,7 @@ ipcMain.handle('check-package-updates', async () => {
   // Helper function to get latest version from PyPI
   const getLatestVersion = (packageName) => {
     return new Promise((resolve) => {
-      const pip = spawn(pipPath, ['index', 'versions', packageName], { timeout: 30000 });
+      const pip = spawn(pythonPath, ['-m', 'pip', 'index', 'versions', packageName], { timeout: 30000 });
       let output = '';
       pip.stdout.on('data', (data) => { output += data.toString(); });
       pip.stderr.on('data', (data) => { output += data.toString(); });
@@ -1838,8 +1831,6 @@ ipcMain.handle('update-all', async (event, options = {}) => {
     return { success: false, message: 'Python nicht gefunden' };
   }
 
-  const pipPath = path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe');
-
   // Auto-detect CUDA if no indexUrl specified
   let indexUrl = options.indexUrl;
   if (indexUrl === undefined || indexUrl === '') {
@@ -1851,16 +1842,16 @@ ipcMain.handle('update-all', async (event, options = {}) => {
   return new Promise((resolve) => {
     // First update pip itself
     console.log('Updating pip...');
-    const pipUpgrade = spawn(pipPath, ['install', '--upgrade', 'pip'], { timeout: 120000 });
+    const pipUpgrade = spawn(pythonPath, ['-m', 'pip', 'install', '--upgrade', 'pip'], { timeout: 120000 });
 
     pipUpgrade.on('close', () => {
       // Uninstall old PyTorch first
       console.log('Uninstalling old PyTorch...');
-      const uninstall = spawn(pipPath, ['uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 60000 });
+      const uninstall = spawn(pythonPath, ['-m', 'pip', 'uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 60000 });
 
       uninstall.on('close', () => {
         // Build install arguments based on selected index URL
-        let args = ['install'];
+        let args = ['-m', 'pip', 'install'];
 
         if (indexUrl && indexUrl.includes('nightly')) {
           args.push('--pre');
@@ -1873,7 +1864,7 @@ ipcMain.handle('update-all', async (event, options = {}) => {
         }
 
         console.log('Installing PyTorch with args:', args.join(' '));
-        const pip = spawn(pipPath, args, { timeout: 600000 });
+        const pip = spawn(pythonPath, args, { timeout: 600000 });
         let output = '';
 
         pip.stdout.on('data', (data) => { output += data.toString(); });
@@ -1884,7 +1875,7 @@ ipcMain.handle('update-all', async (event, options = {}) => {
 
           // Also update Whisper
           console.log('Updating Whisper...');
-          const whisperUpdate = spawn(pipPath, ['install', '--upgrade', 'openai-whisper'], { timeout: 300000 });
+          const whisperUpdate = spawn(pythonPath, ['-m', 'pip', 'install', '--upgrade', 'openai-whisper'], { timeout: 300000 });
 
           whisperUpdate.on('close', (code2) => {
             const cudaInfo = indexUrl ? indexUrl.split('/').pop() : 'CPU';
@@ -2173,7 +2164,6 @@ ipcMain.on('setup-upgrade-pytorch', async (event, { indexUrl }) => {
     return;
   }
 
-  const pipPath = path.join(path.dirname(pythonPath), 'Scripts', 'pip.exe');
   const cudaLabel = indexUrl ? indexUrl.split('/').pop() : 'CPU';
 
   const sendProgress = (progress, status, log, type = '') => {
@@ -2193,7 +2183,7 @@ ipcMain.on('setup-upgrade-pytorch', async (event, { indexUrl }) => {
 
     // Uninstall old PyTorch
     await new Promise((resolve) => {
-      const uninstall = spawn(pipPath, ['uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 120000 });
+      const uninstall = spawn(pythonPath, ['-m', 'pip', 'uninstall', 'torch', 'torchvision', 'torchaudio', '-y'], { timeout: 120000 });
       uninstall.on('close', resolve);
       uninstall.on('error', resolve);
     });
@@ -2201,7 +2191,7 @@ ipcMain.on('setup-upgrade-pytorch', async (event, { indexUrl }) => {
     sendProgress(30, `Installing PyTorch (${cudaLabel})...`, `Downloading PyTorch with ${cudaLabel}...`, 'info');
 
     // Install new PyTorch
-    await runPip(pipPath, ['install', 'torch', 'torchvision', 'torchaudio', '--index-url', indexUrl], sendProgress);
+    await runPip(pythonPath, ['install', 'torch', 'torchvision', 'torchaudio', '--index-url', indexUrl], sendProgress);
 
     sendProgress(100, 'Complete!', `PyTorch upgraded to ${cudaLabel}!`, 'success');
 
