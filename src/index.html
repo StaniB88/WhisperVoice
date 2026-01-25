@@ -932,7 +932,7 @@
           <div class="setting-row flex justify-between items-center py-3 border-b border-white/[0.04] last:border-b-0">
             <div>
               <div class="setting-label text-sm text-gray-400">Push-to-Talk Hotkey</div>
-              <div class="setting-desc text-xs text-gray-600 mt-1">Win+Taste wird unterstützt!</div>
+              <div class="setting-desc text-xs text-gray-600 mt-1">Ctrl, Shift, Alt, Win + Taste (z.B. Ctrl+Shift+D)</div>
             </div>
             <button class="hotkey-btn bg-[#252535] border border-white/10 text-white px-4 py-2 rounded-lg text-sm cursor-pointer transition-all min-w-[150px] hover:border-cyan-400 hover:bg-[#2a2a3e]" id="hotkeyBtn">Win+D</button>
           </div>
@@ -959,9 +959,35 @@
               <div class="setting-desc text-xs text-gray-600 mt-1">Erkennungssprache</div>
             </div>
             <select id="languageSelect" class="bg-[#252535] border border-white/10 text-white px-3 py-2 rounded-lg text-sm min-w-[150px] focus:outline-none focus:border-cyan-400">
+              <option value="auto">Automatisch / Auto</option>
               <option value="de" selected>Deutsch</option>
               <option value="en">English</option>
-              <option value="auto">Automatisch</option>
+              <option value="sq">Shqip (Albanian)</option>
+              <option value="ar">العربية (Arabic)</option>
+              <option value="zh">中文 (Chinese)</option>
+              <option value="hr">Hrvatski (Croatian)</option>
+              <option value="cs">Čeština (Czech)</option>
+              <option value="da">Dansk (Danish)</option>
+              <option value="nl">Nederlands (Dutch)</option>
+              <option value="fi">Suomi (Finnish)</option>
+              <option value="fr">Français (French)</option>
+              <option value="hi">हिन्दी (Hindi)</option>
+              <option value="hu">Magyar (Hungarian)</option>
+              <option value="it">Italiano (Italian)</option>
+              <option value="ja">日本語 (Japanese)</option>
+              <option value="ko">한국어 (Korean)</option>
+              <option value="no">Norsk (Norwegian)</option>
+              <option value="pl">Polski (Polish)</option>
+              <option value="pt">Português (Portuguese)</option>
+              <option value="ro">Română (Romanian)</option>
+              <option value="ru">Русский (Russian)</option>
+              <option value="sr">Српски (Serbian)</option>
+              <option value="sk">Slovenčina (Slovak)</option>
+              <option value="sl">Slovenščina (Slovenian)</option>
+              <option value="es">Español (Spanish)</option>
+              <option value="sv">Svenska (Swedish)</option>
+              <option value="tr">Türkçe (Turkish)</option>
+              <option value="uk">Українська (Ukrainian)</option>
             </select>
           </div>
         </div>
@@ -1175,7 +1201,7 @@
         // Settings Panel
         hotkey: 'Tastenkürzel',
         pushToTalkHotkey: 'Push-to-Talk Hotkey',
-        winKeySupported: 'Win+Taste wird unterstützt!',
+        winKeySupported: 'Ctrl, Shift, Alt, Win + Taste (z.B. Ctrl+Shift+D)',
         pressKeys: 'Drücke Tasten...',
 
         whisperSettings: 'Whisper Einstellungen',
@@ -1257,7 +1283,7 @@
         // Settings Panel
         hotkey: 'Hotkey',
         pushToTalkHotkey: 'Push-to-Talk Hotkey',
-        winKeySupported: 'Win+Key is supported!',
+        winKeySupported: 'Ctrl, Shift, Alt, Win + Key (e.g. Ctrl+Shift+D)',
         pressKeys: 'Press keys...',
 
         whisperSettings: 'Whisper Settings',
