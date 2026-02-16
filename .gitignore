@@ -1,0 +1,46 @@
+# Build output
+bin/
+obj/
+dist/
+out/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.vs/
+*.user
+*.suo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Publish output
+publish/
+Releases/
+
+# Whisper model files
+*.ggml
+
+# Config with sensitive data
+config.json
+
+# Claude Code local settings
+.claude/
+
+# Personal development notes
+Info/
+
+# Batch files (local use only)
+*.bat
+*.vbs
+
+# Large source images (use assets/logo.png instead)
+Icon.png

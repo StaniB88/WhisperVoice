@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WhisperVoice.ViewModels"
+        x:Class="WhisperVoice.Views.DonateDialog"
+        x:DataType="vm:DonateViewModel"
+        Title="Support Whisper Voice"
+        Width="420" Height="300"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        </Style>
+
+        <!-- Primary donate button -->
+        <Style Selector="Button.donate">
+            <Setter Property="Background" Value="{DynamicResource BgAccent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextWhite}"/>
+            <Setter Property="Padding" Value="32,12"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.donate:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BgAccentHover}"/>
+        </Style>
+
+        <!-- Ghost button (transparent) -->
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BgOverlay}"/>
+        </Style>
+
+        <!-- Subtle link button -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextDim}"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        </Style>
+    </Window.Styles>
+
+    <Border CornerRadius="12" Background="{DynamicResource BgSecondary}" BorderBrush="{DynamicResource BgOverlayBorder}" BorderThickness="1"
+            Padding="32" Margin="4">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16" Opacity="0.5" OffsetX="0" OffsetY="4" Color="{DynamicResource ShadowColor}"/>
+        </Border.Effect>
+
+        <StackPanel Spacing="20" VerticalAlignment="Center">
+            <!-- Heart icon -->
+            <TextBlock Text="&#x2764;" FontSize="32" HorizontalAlignment="Center" Foreground="{DynamicResource Highlight}"/>
+
+            <!-- Title -->
+            <TextBlock Text="Support Whisper Voice"
+                       FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextWhite}"
+                       HorizontalAlignment="Center"/>
+
+            <!-- Description -->
+            <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       LineHeight="20"
+                       Text="Whisper Voice is free and open source. If you find it useful, consider supporting its development."/>
+
+            <!-- Donate button -->
+            <Button Classes="donate" Content="Donate"
+                    Command="{Binding DonateCommand}"
+                    HorizontalAlignment="Center"/>
+
+            <!-- Maybe later -->
+            <Button Classes="ghost" Content="Maybe Later"
+                    Command="{Binding MaybeLaterCommand}"
+                    HorizontalAlignment="Center"/>
+
+            <!-- Already donated link -->
+            <Button Classes="link" Content="I already donated"
+                    Command="{Binding AlreadyDonatedCommand}"
+                    HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Border>
+</Window>
