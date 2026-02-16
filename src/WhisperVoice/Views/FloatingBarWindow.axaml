@@ -1,0 +1,167 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WhisperVoice.ViewModels"
+        x:Class="WhisperVoice.Views.FloatingBarWindow"
+        x:DataType="vm:FloatingBarViewModel"
+        Title="Whisper Voice"
+        SizeToContent="WidthAndHeight"
+        Topmost="True"
+        ShowInTaskbar="False"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        WindowStartupLocation="Manual">
+
+    <Window.Styles>
+        <!-- Pulse animation for recording dot -->
+        <Style Selector="Ellipse.pulse-recording">
+            <Setter Property="RenderTransform">
+                <ScaleTransform/>
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:1" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Opacity" Value="0.6"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.3"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.3"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Pulse animation for processing dot (faster) -->
+        <Style Selector="Ellipse.pulse-processing">
+            <Setter Property="RenderTransform">
+                <ScaleTransform/>
+            </Setter>
+            <Style.Animations>
+                <Animation Duration="0:0:0.6" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                        <Setter Property="Opacity" Value="0.5"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1.2"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1.2"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                        <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+
+        <!-- Waveform bar animations -->
+        <Style Selector="Border.wave-bar1">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Height" Value="4"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Height" Value="12"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Height" Value="4"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.wave-bar2">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" Delay="0:0:0.1" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Height" Value="8"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Height" Value="14"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Height" Value="8"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.wave-bar3">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" Delay="0:0:0.2" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Height" Value="6"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Height" Value="12"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Height" Value="6"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.wave-bar4">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" Delay="0:0:0.3" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Height" Value="10"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Height" Value="14"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Height" Value="10"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Border.wave-bar5">
+            <Style.Animations>
+                <Animation Duration="0:0:0.5" Delay="0:0:0.4" IterationCount="INFINITE">
+                    <KeyFrame Cue="0%"><Setter Property="Height" Value="7"/></KeyFrame>
+                    <KeyFrame Cue="50%"><Setter Property="Height" Value="12"/></KeyFrame>
+                    <KeyFrame Cue="100%"><Setter Property="Height" Value="7"/></KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </Window.Styles>
+
+    <Border CornerRadius="20" Background="{DynamicResource BgFloating}" Padding="12,4"
+            Cursor="Hand" BorderBrush="{DynamicResource BgOverlayBorder}" BorderThickness="1">
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Whisper Voice" IsEnabled="False" FontWeight="SemiBold"/>
+                <Separator/>
+                <MenuItem Header="Show Main Window" Click="ShowMainWindowClick"/>
+                <MenuItem Header="Hide Floating Bar" Click="HideFloatingBarClick"/>
+                <MenuItem Header="{Binding HotkeyInfo}" IsEnabled="False"/>
+                <MenuItem Header="{Binding ModelInfo}" IsEnabled="False"/>
+                <Separator/>
+                <MenuItem Header="Quit" Click="QuitClick"/>
+            </ContextMenu>
+        </Border.ContextMenu>
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <!-- Status dot -->
+            <Panel Width="10" Height="10" VerticalAlignment="Center">
+                <!-- Idle dot (cyan) -->
+                <Ellipse Width="10" Height="10" Fill="{DynamicResource IdleDot}"
+                         IsVisible="{Binding IsIdle}"/>
+                <!-- Recording dot (pulsing red) -->
+                <Ellipse Width="10" Height="10" Fill="{DynamicResource Highlight}"
+                         Classes="pulse-recording" RenderTransformOrigin="50%,50%"
+                         IsVisible="{Binding IsRecording}"/>
+                <!-- Processing dot (pulsing amber) -->
+                <Ellipse Width="10" Height="10" Fill="{DynamicResource ProcessingAmber}"
+                         Classes="pulse-processing" RenderTransformOrigin="50%,50%"
+                         IsVisible="{Binding IsProcessing}"/>
+            </Panel>
+
+            <!-- Waveform bars (recording only) -->
+            <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
+                        IsVisible="{Binding IsRecording}">
+                <Border Classes="wave-bar1" Width="2" Height="4" CornerRadius="1"
+                        Background="{DynamicResource Highlight}" VerticalAlignment="Center"/>
+                <Border Classes="wave-bar2" Width="2" Height="8" CornerRadius="1"
+                        Background="{DynamicResource Highlight}" VerticalAlignment="Center"/>
+                <Border Classes="wave-bar3" Width="2" Height="6" CornerRadius="1"
+                        Background="{DynamicResource Highlight}" VerticalAlignment="Center"/>
+                <Border Classes="wave-bar4" Width="2" Height="10" CornerRadius="1"
+                        Background="{DynamicResource Highlight}" VerticalAlignment="Center"/>
+                <Border Classes="wave-bar5" Width="2" Height="7" CornerRadius="1"
+                        Background="{DynamicResource Highlight}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Status text -->
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="{DynamicResource TextPrimary}" FontSize="12"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+    </Border>
+</Window>
