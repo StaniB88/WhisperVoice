@@ -176,7 +176,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Log.Debug(ex, "Update check failed");
+            Log.Debug(ex, "Background update check failed");
         }
     }
 

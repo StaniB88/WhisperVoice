@@ -6,6 +6,7 @@ namespace WhisperVoice.Services;
 
 public interface IUpdateService
 {
+    event EventHandler<UpdateInfo>? UpdateAvailable;
     bool IsInstalled { get; }
     string? CurrentVersion { get; }
     Task<UpdateInfo?> CheckForUpdateAsync(CancellationToken ct = default);
