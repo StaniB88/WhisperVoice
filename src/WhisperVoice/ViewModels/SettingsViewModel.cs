@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Serilog;
@@ -79,6 +80,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         SelectedTheme = AvailableThemes.FirstOrDefault(t => t.Key == current.Theme) ?? AvailableThemes[0];
 
         _hotkey.HotkeyRecorded += OnHotkeyRecorded;
+        _updateService.UpdateAvailable += OnUpdateAvailable;
     }
 
     partial void OnToggleModeChanged(bool value) =>
@@ -283,8 +285,20 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _hotkey.UpdateHotkey(e.Config);
     }
 
+    private void OnUpdateAvailable(object? sender, UpdateInfo update)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _pendingUpdate = update;
+            UpdateAvailable = true;
+            UpdateVersion = update.Version;
+        });
+        Log.Information("Update notification received: {Version}", update.Version);
+    }
+
     public void Dispose()
     {
         _hotkey.HotkeyRecorded -= OnHotkeyRecorded;
+        _updateService.UpdateAvailable -= OnUpdateAvailable;
     }
 }

@@ -10,6 +10,8 @@ public sealed class VelopackUpdateService : IUpdateService
 {
     private readonly UpdateManager _mgr;
 
+    public event EventHandler<UpdateInfo>? UpdateAvailable;
+
     public bool IsInstalled => _mgr.IsInstalled;
     public string? CurrentVersion => _mgr.IsInstalled ? _mgr.CurrentVersion?.ToString() : null;
 
@@ -26,10 +28,14 @@ public sealed class VelopackUpdateService : IUpdateService
         var update = await _mgr.CheckForUpdatesAsync();
         if (update is null) return null;
 
-        return new UpdateInfo(
+        var info = new UpdateInfo(
             update.TargetFullRelease.Version.ToString(),
             update
         );
+
+        UpdateAvailable?.Invoke(this, info);
+
+        return info;
     }
 
     public async Task DownloadUpdateAsync(UpdateInfo update, IProgress<int>? progress = null, CancellationToken ct = default)
