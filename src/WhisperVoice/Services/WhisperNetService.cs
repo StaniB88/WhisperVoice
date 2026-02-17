@@ -31,22 +31,40 @@ public sealed class WhisperNetService : ITranscriptionService
 
             var (factory, device) = await Task.Run(() =>
             {
+                Log.Debug("Setting runtime library order: CUDA first, CPU fallback");
                 RuntimeOptions.RuntimeLibraryOrder =
                 [
                     RuntimeLibrary.Cuda,
                     RuntimeLibrary.Cpu
                 ];
 
+                Log.Debug("Creating WhisperFactory from {Path}", modelPath);
                 var f = WhisperFactory.FromPath(modelPath);
 
-                // Build a throwaway processor to detect runtime
+                // Build a throwaway processor to force runtime selection
+                Log.Debug("Creating probe processor to detect available runtime...");
                 using var probe = f.CreateBuilder().WithLanguage(AppConstants.AutoDetectLanguage).Build();
 
-                var d = RuntimeOptions.LoadedLibrary switch
+                var loaded = RuntimeOptions.LoadedLibrary;
+                var d = loaded switch
                 {
                     RuntimeLibrary.Cuda => "GPU (CUDA)",
                     _ => "CPU"
                 };
+
+                if (loaded != RuntimeLibrary.Cuda)
+                {
+                    Log.Warning(
+                        "CUDA runtime was not loaded — falling back to CPU. " +
+                        "Possible causes: (1) NVIDIA GPU drivers not installed or outdated, " +
+                        "(2) GPU does not support CUDA, " +
+                        "(3) Insufficient VRAM for the selected model, " +
+                        "(4) CUDA toolkit libraries missing");
+                }
+                else
+                {
+                    Log.Information("CUDA runtime loaded successfully");
+                }
 
                 return (f, d);
             }, ct);
