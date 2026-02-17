@@ -1,10 +1,15 @@
+using System;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using WhisperVoice.Models;
 using WhisperVoice.Services;
 
 namespace WhisperVoice.ViewModels;
 
-public partial class FloatingBarViewModel : ViewModelBase
+public partial class FloatingBarViewModel : ViewModelBase, IDisposable
 {
+    private readonly IConfigService _config;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsIdle))]
     private bool _isRecording;
@@ -29,9 +34,27 @@ public partial class FloatingBarViewModel : ViewModelBase
 
     public FloatingBarViewModel(IConfigService config)
     {
+        _config = config;
         HotkeyHint = config.Current.HotkeyDisplay;
         ModelName = config.Current.WhisperModel;
         StatusText = string.Format(Strings.FloatingBarIdleFormat, HotkeyHint);
+        _config.ConfigChanged += OnConfigChanged;
+    }
+
+    private void OnConfigChanged(object? sender, AppConfig cfg)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (HotkeyHint != cfg.HotkeyDisplay)
+            {
+                HotkeyHint = cfg.HotkeyDisplay;
+                if (IsIdle)
+                    StatusText = string.Format(Strings.FloatingBarIdleFormat, HotkeyHint);
+            }
+
+            if (ModelName != cfg.WhisperModel)
+                ModelName = cfg.WhisperModel;
+        });
     }
 
     public void Sync(bool isRecording, bool isProcessing, string statusText)
@@ -41,5 +64,10 @@ public partial class FloatingBarViewModel : ViewModelBase
         StatusText = isRecording || isProcessing
             ? statusText
             : string.Format(Strings.FloatingBarIdleFormat, HotkeyHint);
+    }
+
+    public void Dispose()
+    {
+        _config.ConfigChanged -= OnConfigChanged;
     }
 }

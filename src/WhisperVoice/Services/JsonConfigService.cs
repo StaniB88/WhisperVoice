@@ -21,6 +21,7 @@ public sealed class JsonConfigService : IConfigService
     private AppConfig _current;
 
     public AppConfig Current => _current;
+    public event EventHandler<AppConfig>? ConfigChanged;
 
     public JsonConfigService(string configPath)
     {
@@ -112,5 +113,6 @@ public sealed class JsonConfigService : IConfigService
         var json = JsonSerializer.Serialize(config, JsonOptions);
         File.WriteAllText(_configPath, json);
         _current = config;
+        ConfigChanged?.Invoke(this, config);
     }
 }

@@ -9,4 +9,7 @@ public interface IConfigService
     void Save(AppConfig config);
     AppConfig Update(Func<AppConfig, AppConfig> updater);
     AppConfig Current { get; }
+
+    /// <summary>Raised after any config update (Save or Update).</summary>
+    event EventHandler<AppConfig>? ConfigChanged;
 }
