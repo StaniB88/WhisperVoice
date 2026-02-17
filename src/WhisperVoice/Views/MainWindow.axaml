@@ -6,7 +6,7 @@
         x:Class="WhisperVoice.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Whisper Voice"
-        Width="800" Height="500"
+        Width="800" Height="800"
         MinWidth="600" MinHeight="400"
         WindowStartupLocation="CenterScreen"
         ExtendClientAreaToDecorationsHint="True"
@@ -140,7 +140,7 @@
                 <TextBlock Text="Whisper Voice" FontSize="12" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Classes="titlebar" Content="{x:Static x:String.Empty}" Click="MinimizeClick">
+                <Button Classes="titlebar" Click="MinimizeClick">
                     <TextBlock Text="&#x2014;" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
                 </Button>
                 <Button Classes="titlebar titlebar-close" Click="CloseClick">
@@ -375,7 +375,7 @@
                 </Border>
 
                 <!-- Settings page -->
-                <Border Name="SettingsPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:SettingsViewModel">
+                <Border Name="SettingsPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:SettingsViewModel" x:CompileBindings="False">
                     <ScrollViewer>
                         <StackPanel Spacing="24" MaxWidth="500">
                             <TextBlock Text="Settings" FontSize="24" FontWeight="Bold"
@@ -525,7 +525,7 @@
                 </Border>
 
                 <!-- Notes page -->
-                <Border Name="NotesPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:NotesViewModel">
+                <Border Name="NotesPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:NotesViewModel" x:CompileBindings="False">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="Notes" FontSize="24" FontWeight="Bold"
                                    Foreground="{DynamicResource TextWhite}" Margin="0,0,0,4"/>
