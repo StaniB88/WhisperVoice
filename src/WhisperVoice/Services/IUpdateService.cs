@@ -9,6 +9,7 @@ public interface IUpdateService
     event EventHandler<UpdateInfo>? UpdateAvailable;
     bool IsInstalled { get; }
     string? CurrentVersion { get; }
+    UpdateInfo? LatestUpdate { get; }
     Task<UpdateInfo?> CheckForUpdateAsync(CancellationToken ct = default);
     Task DownloadUpdateAsync(UpdateInfo update, IProgress<int>? progress = null, CancellationToken ct = default);
     void ApplyUpdateAndRestart(UpdateInfo update);
