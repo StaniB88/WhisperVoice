@@ -81,6 +81,14 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         _hotkey.HotkeyRecorded += OnHotkeyRecorded;
         _updateService.UpdateAvailable += OnUpdateAvailable;
+
+        // Pick up any update found before this ViewModel was created
+        if (_updateService.LatestUpdate is { } pending)
+        {
+            _pendingUpdate = pending;
+            UpdateAvailable = true;
+            UpdateVersion = pending.Version;
+        }
     }
 
     partial void OnToggleModeChanged(bool value) =>

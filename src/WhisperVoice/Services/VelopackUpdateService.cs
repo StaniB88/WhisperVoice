@@ -14,6 +14,7 @@ public sealed class VelopackUpdateService : IUpdateService
 
     public bool IsInstalled => _mgr.IsInstalled;
     public string? CurrentVersion => _mgr.IsInstalled ? _mgr.CurrentVersion?.ToString() : null;
+    public UpdateInfo? LatestUpdate { get; private set; }
 
     public VelopackUpdateService(string githubRepoUrl)
     {
@@ -33,6 +34,7 @@ public sealed class VelopackUpdateService : IUpdateService
             update
         );
 
+        LatestUpdate = info;
         UpdateAvailable?.Invoke(this, info);
 
         return info;
