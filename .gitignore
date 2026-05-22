@@ -40,10 +40,12 @@ config.json
 # Personal development notes
 Info/
 
-# Batch files (local use only) — release scripts in scripts/ kept
+# Batch files (local use only)
 *.bat
 *.vbs
-!scripts/*.bat
+
+# Local release scripts — contain internal paths + signing infrastructure
+scripts/
 
 # Secrets / credentials / certificates — never commit
 *.pfx
