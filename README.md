@@ -4,7 +4,7 @@ Local speech-to-text for Windows using OpenAI Whisper — like Wispr Flow, but f
 
 ![Windows](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
 ![.NET](https://img.shields.io/badge/.NET-10-purple)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue)
 
 ## Features
 
@@ -76,7 +76,9 @@ Models are downloaded on first use and stored in `%APPDATA%/whisper-voice/models
 | Small | ~466 MB | ~2 GB | ~4x | Better |
 | Medium | ~1.5 GB | ~5 GB | ~2x | Great |
 | Large v3 | ~2.9 GB | ~10 GB | 1x | Best |
+| Large Q5_0 | ~1.1 GB | ~5 GB | ~1.5x | Great |
 | Large Turbo | ~1.5 GB | ~6 GB | ~8x | Best |
+| Large Turbo Q5_0 | ~574 MB | ~3 GB | ~10x | Great |
 
 English-only variants (Tiny, Base, Small, Medium) are also available for improved accuracy on English speech.
 
@@ -102,7 +104,7 @@ Clipboard + SendInput (auto-paste at cursor)
 
 | Component | Technology |
 |-----------|-----------|
-| UI | Avalonia UI 11 |
+| UI | Avalonia UI 12 |
 | MVVM | CommunityToolkit.Mvvm |
 | Transcription | Whisper.net (whisper.cpp bindings) |
 | Audio | NAudio |
@@ -126,7 +128,12 @@ Clipboard + SendInput (auto-paste at cursor)
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Copyright (C) 2026 AnyAutomation.
+
+Whisper Voice is licensed under the **GNU Lesser General Public License v3.0 or later** (LGPL-3.0-or-later).
+See [LICENSE](LICENSE) / [COPYING.LESSER](COPYING.LESSER) and [COPYING](COPYING) for the full license texts.
+
+Third-party components are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Credits
 

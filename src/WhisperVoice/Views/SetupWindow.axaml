@@ -9,7 +9,7 @@
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
+        WindowDecorations="BorderOnly"
         Background="{DynamicResource BgPrimary}">
 
     <Window.Styles>
