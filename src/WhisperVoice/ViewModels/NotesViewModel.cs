@@ -52,7 +52,14 @@ public partial class NotesViewModel : ViewModelBase
     private void SaveNote()
     {
         var text = EditorText.Trim();
-        if (string.IsNullOrEmpty(text)) return;
+
+        if (string.IsNullOrEmpty(text))
+        {
+            // Saving empty text while editing exits edit mode instead of leaving
+            // the editor stuck with the Cancel button visible and no content.
+            if (_editingId is not null) CancelEdit();
+            return;
+        }
 
         if (_editingId is not null)
         {
@@ -61,6 +68,10 @@ public partial class NotesViewModel : ViewModelBase
             {
                 Notes[idx] = Notes[idx] with { Text = text, EditedAt = DateTime.Now };
                 Log.Debug("Note {Id} updated", _editingId);
+            }
+            else
+            {
+                Log.Warning("Edit target {Id} no longer in collection", _editingId);
             }
             CancelEdit();
         }

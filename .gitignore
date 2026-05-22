@@ -24,6 +24,8 @@ Thumbs.db
 
 # Publish output
 publish/
+
+# Velopack release artifacts (built locally, uploaded to GitHub Releases)
 Releases/
 
 # Whisper model files
@@ -43,8 +45,19 @@ Info/
 *.vbs
 !scripts/*.bat
 
-# Velopack release artifacts (built locally, uploaded to GitHub Releases)
-Releases/
+# Secrets / credentials / certificates — never commit
+*.pfx
+*.p12
+*.cer
+*.pem
+*.key
+*.snk
+.env
+.env.*
+*.env
+secrets.*
+credentials.*
+appsettings.*.Local.json
 
 # Large source images (use assets/logo.png instead)
 Icon.png

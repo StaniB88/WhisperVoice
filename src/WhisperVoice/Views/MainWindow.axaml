@@ -381,7 +381,7 @@
                 </Border>
 
                 <!-- Settings page -->
-                <Border Name="SettingsPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:SettingsViewModel" x:CompileBindings="False">
+                <Border Name="SettingsPage" IsVisible="False" Margin="24" DataContext="{x:Null}" x:DataType="vm:SettingsViewModel">
                     <ScrollViewer>
                         <StackPanel Spacing="24" MaxWidth="500">
                             <TextBlock Text="Settings" FontSize="24" FontWeight="Bold"
