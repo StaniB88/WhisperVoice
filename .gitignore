@@ -38,9 +38,13 @@ config.json
 # Personal development notes
 Info/
 
-# Batch files (local use only)
+# Batch files (local use only) — release scripts in scripts/ kept
 *.bat
 *.vbs
+!scripts/*.bat
+
+# Velopack release artifacts (built locally, uploaded to GitHub Releases)
+Releases/
 
 # Large source images (use assets/logo.png instead)
 Icon.png
